@@ -7,7 +7,8 @@ from kicktipp import Kicktipp
 def main():
     args = parse_args()
     kicktipp = Kicktipp(args)
-    kicktipp.handle_matchday(args.matchday)
+    for matchday in args.matchday:
+        kicktipp.handle_matchday(int(matchday))
     kicktipp.kill_browser()
 
 
@@ -18,7 +19,8 @@ def parse_args():
                            action="store_true", required=False)
     argparser.add_argument("-u", "--username", help="Username for Kicktipp login", required=True)
     argparser.add_argument("-p", "--password", help="Password for Kicktipp login", required=True)
-    argparser.add_argument("-m", "--matchday", help="Number of the matchday to bet for", type=int, default=1)
+    argparser.add_argument("-m", "--matchday", help="Number of the matchday to bet for", required=True,
+                           action='append')
     argparser.add_argument("-d", "--dryrun", action="store_true", required=False,
                            help="Do not insert into Kicktipp, only print calculated results on console")
     args = argparser.parse_args()
