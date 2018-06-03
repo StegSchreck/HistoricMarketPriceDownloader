@@ -118,7 +118,19 @@ class Kicktipp:
         self.go_to_matchday(matchday)
         matches = self.retrieve_betting_odds()
         self.calculate_tips(matches)
-        self.enter_tips(matches)
+        if self.args and self.args.dryrun:
+            for match in matches:
+                print("{home_team} - {guest_team}   {odds_home} {odds_draw} {odds_guest}   [{tip_home}:{tip_guest}]".format(
+                    home_team=match.home_team,
+                    guest_team=match.guest_team,
+                    odds_home=match.odds_home,
+                    odds_draw=match.odds_draw,
+                    odds_guest=match.odds_guest,
+                    tip_home=match.tip_home,
+                    tip_guest=match.tip_guest
+                ))
+        else:
+            self.enter_tips(matches)
 
     def go_to_matchday(self, matchday):
         self.browser.get("https://www.kicktipp.de/wm-klamauk-referenz/tippabgabe?&spieltagIndex={matchday}".format(
