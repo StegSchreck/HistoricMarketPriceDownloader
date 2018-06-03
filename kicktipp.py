@@ -145,14 +145,11 @@ class Kicktipp:
     @staticmethod
     def calculate_tips(matches):
         for match in matches:
-            if match.odds_home > match.odds_draw < match.odds_guest:
+            if match.odds_home > match.odds_guest:
                 match.tip_home = 0
-                match.tip_guest = 0
-            elif match.odds_home > match.odds_guest:
-                match.tip_home = 0
-                match.tip_guest = int(round(math.log(match.odds_home - match.odds_guest, 2)))
+                match.tip_guest = max(int(round(math.log(match.odds_home - match.odds_guest, 2))), 0)
             else:
-                match.tip_home = int(round(math.log(match.odds_guest - match.odds_home, 2)))
+                match.tip_home = max(int(round(math.log(match.odds_guest - match.odds_home, 2))), 0)
                 match.tip_guest = 0
 
     def enter_tips(self, matches):
