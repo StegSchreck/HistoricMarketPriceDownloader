@@ -146,7 +146,6 @@ class Kicktipp:
     def calculate_tips(matches):
         for match in matches:
             if match.odds_home > match.odds_draw < match.odds_guest:
-                print(match.home_team + ' : ' + match.odds_home + '>' + match.odds_draw + '<' + match.odds_guest + ' : ' + match.guest_team)
                 match.tip_home = 0
                 match.tip_guest = 0
             elif match.odds_home > match.odds_guest:
