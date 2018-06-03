@@ -1,3 +1,4 @@
+import math
 import sys
 import time
 from collections import namedtuple
@@ -134,20 +135,34 @@ class Kicktipp:
             match = namedtuple('Match', ['home_team', 'guest_team', 'odds_home', 'odds_draw', 'odds_guest'])
             match.home_team = match_row.find('td', class_='col1').get_text()
             match.guest_team = match_row.find('td', class_='col2').get_text()
-            match.odds_home = match_row.find('td', class_='col5').get_text()
-            match.odds_draw = match_row.find('td', class_='col6').get_text()
-            match.odds_guest = match_row.find('td', class_='col7').get_text()
+            match.odds_home = float(match_row.find('td', class_='col5').get_text().replace(',', '.'))
+            match.odds_draw = float(match_row.find('td', class_='col6').get_text().replace(',', '.'))
+            match.odds_guest = float(match_row.find('td', class_='col7').get_text().replace(',', '.'))
             matches.append(match)
 
         return matches
 
-    def calculate_tips(self, matches):
+    @staticmethod
+    def calculate_tips(matches):
         for match in matches:
+            if match.odds_home > match.odds_draw < match.odds_guest:
+                print(match.home_team + ' : ' + match.odds_home + '>' + match.odds_draw + '<' + match.odds_guest + ' : ' + match.guest_team)
+                match.tip_home = 0
+                match.tip_guest = 0
+            elif match.odds_home > match.odds_guest:
+                match.tip_home = 0
+                match.tip_guest = int(math.ceil(math.log(match.odds_home - match.odds_guest, 2)))
+            else:
+                match.tip_home = int(math.ceil(math.log(match.odds_guest - match.odds_home, 2)))
+                match.tip_guest = 0
 
-            match.tip_home = 0
-            match.tip_guest = 42
+    def enter_tips(self, matches):
+        for i in range(len(matches)):
+            match = matches[i]
+            match_row = self.browser.find_element_by_id('tippabgabeSpiele').find_elements_by_css_selector('.datarow')[1:][i]
+            match_row.find_elements_by_tag_name('input')[1].send_keys(match.tip_home)
+            match_row.find_elements_by_tag_name('input')[2].send_keys(match.tip_guest)
 
-    def enter_tips(self):
-        pass
+        self.browser.find_element_by_xpath("//form[@id='tippabgabeForm']//input[@type='submit']").click()
 
 
