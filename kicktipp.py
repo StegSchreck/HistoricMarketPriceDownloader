@@ -119,19 +119,47 @@ class Kicktipp:
         matches = self.retrieve_betting_odds()
         self.calculate_tips(matches)
         if self.args and (self.args.dryrun or (self.args.verbose and self.args.verbose >= 1)):
-            print("### MATCHDAY {matchday} ##############################".format(matchday=matchday))
+            tail = '#' * 75
+            print("\033[1m### MATCHDAY {matchday} {tail}\033[0m".format(matchday=matchday, tail=tail))
             for match in matches:
-                print("{home_team} - {guest_team}     {odds_home} {odds_draw} {odds_guest}     [{tip_home}:{tip_guest}]".format(
-                    home_team=match.home_team,
-                    guest_team=match.guest_team,
-                    odds_home=match.odds_home,
-                    odds_draw=match.odds_draw,
-                    odds_guest=match.odds_guest,
-                    tip_home=match.tip_home,
-                    tip_guest=match.tip_guest
-                ))
+                odds_home_marker, odds_draw_marker, odds_guest_marker = self._define_markers(match)
+                print("{home_team: >15} - {guest_team: <15}\t"
+                      "{odds_home_marker}{odds_home: 7.2f}\033[0m "
+                      "{odds_draw_marker}{odds_draw: 7.2f}\033[0m "
+                      "{odds_guest_marker}{odds_guest: 7.2f}\033[0m\t\t"
+                      "\033[94m[{tip_home: >2} :{tip_guest: >2} ]\033[0m".format(
+                          home_team=match.home_team,
+                          guest_team=match.guest_team,
+                          odds_home_marker=odds_home_marker,
+                          odds_draw_marker=odds_draw_marker,
+                          odds_guest_marker=odds_guest_marker,
+                          odds_home=match.odds_home,
+                          odds_draw=match.odds_draw,
+                          odds_guest=match.odds_guest,
+                          tip_home=match.tip_home,
+                          tip_guest=match.tip_guest
+                      ))
         if self.args and not self.args.dryrun:
             self.enter_tips(matches)
+
+    @staticmethod
+    def _define_markers(match):
+        odds_home_marker = '\033[93m'
+        odds_draw_marker = '\033[93m'
+        odds_guest_marker = '\033[93m'
+        if match.odds_home == min(match.odds_home, match.odds_draw, match.odds_guest):
+            odds_home_marker = '\033[92m'
+        elif match.odds_home == max(match.odds_home, match.odds_draw, match.odds_guest):
+            odds_home_marker = '\033[91m'
+        if match.odds_draw == min(match.odds_home, match.odds_draw, match.odds_guest):
+            odds_draw_marker = '\033[92m'
+        elif match.odds_draw == max(match.odds_home, match.odds_draw, match.odds_guest):
+            odds_draw_marker = '\033[91m'
+        if match.odds_guest == min(match.odds_home, match.odds_draw, match.odds_guest):
+            odds_guest_marker = '\033[92m'
+        elif match.odds_guest == max(match.odds_home, match.odds_draw, match.odds_guest):
+            odds_guest_marker = '\033[91m'
+        return odds_home_marker, odds_draw_marker, odds_guest_marker
 
     def go_to_matchday(self, matchday):
         self.browser.get("https://www.kicktipp.de/wm-klamauk-referenz/tippabgabe?&spieltagIndex={matchday}".format(
