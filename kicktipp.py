@@ -151,18 +151,18 @@ class Kicktipp:
                 match.tip_guest = 0
             elif match.odds_home > match.odds_guest:
                 match.tip_home = 0
-                match.tip_guest = int(math.ceil(math.log(match.odds_home - match.odds_guest, 2)))
+                match.tip_guest = int(round(math.log(match.odds_home - match.odds_guest, 2)))
             else:
-                match.tip_home = int(math.ceil(math.log(match.odds_guest - match.odds_home, 2)))
+                match.tip_home = int(round(math.log(match.odds_guest - match.odds_home, 2)))
                 match.tip_guest = 0
 
     def enter_tips(self, matches):
         for i in range(len(matches)):
             match = matches[i]
             match_row = self.browser.find_element_by_id('tippabgabeSpiele').find_elements_by_css_selector('.datarow')[1:][i]
+            match_row.find_elements_by_tag_name('input')[1].clear()
             match_row.find_elements_by_tag_name('input')[1].send_keys(match.tip_home)
+            match_row.find_elements_by_tag_name('input')[2].clear()
             match_row.find_elements_by_tag_name('input')[2].send_keys(match.tip_guest)
 
         self.browser.find_element_by_xpath("//form[@id='tippabgabeForm']//input[@type='submit']").click()
-
-
