@@ -177,9 +177,9 @@ class Kicktipp:
             match = namedtuple('Match', ['home_team', 'guest_team', 'odds_home', 'odds_draw', 'odds_guest'])
             match.home_team = match_row.find('td', class_='col1').get_text()
             match.guest_team = match_row.find('td', class_='col2').get_text()
-            match.odds_home = float(match_row.find('td', class_='col5').get_text().replace(',', '.'))
-            match.odds_draw = float(match_row.find('td', class_='col6').get_text().replace(',', '.'))
-            match.odds_guest = float(match_row.find('td', class_='col7').get_text().replace(',', '.'))
+            match.odds_home = float(match_row.find_all('td', class_='kicktipp-wettquote')[0].get_text().replace(',', '.'))
+            match.odds_draw = float(match_row.find_all('td', class_='kicktipp-wettquote')[1].get_text().replace(',', '.'))
+            match.odds_guest = float(match_row.find_all('td', class_='kicktipp-wettquote')[2].get_text().replace(',', '.'))
             matches.append(match)
 
         return matches
