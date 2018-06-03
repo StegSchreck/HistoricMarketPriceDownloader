@@ -118,9 +118,10 @@ class Kicktipp:
         self.go_to_matchday(matchday)
         matches = self.retrieve_betting_odds()
         self.calculate_tips(matches)
-        if self.args and self.args.dryrun:
+        if self.args and (self.args.dryrun or (self.args.verbose and self.args.verbose >= 1)):
+            print("### MATCHDAY {matchday} ##############################".format(matchday=matchday))
             for match in matches:
-                print("{home_team} - {guest_team}   {odds_home} {odds_draw} {odds_guest}   [{tip_home}:{tip_guest}]".format(
+                print("{home_team} - {guest_team}     {odds_home} {odds_draw} {odds_guest}     [{tip_home}:{tip_guest}]".format(
                     home_team=match.home_team,
                     guest_team=match.guest_team,
                     odds_home=match.odds_home,
@@ -129,7 +130,7 @@ class Kicktipp:
                     tip_home=match.tip_home,
                     tip_guest=match.tip_guest
                 ))
-        else:
+        if self.args and not self.args.dryrun:
             self.enter_tips(matches)
 
     def go_to_matchday(self, matchday):
