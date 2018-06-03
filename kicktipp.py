@@ -120,7 +120,7 @@ class Kicktipp:
         self.calculate_tips(matches)
         if self.args and (self.args.dryrun or (self.args.verbose and self.args.verbose >= 1)):
             tail = '#' * 75
-            print("\033[1m### MATCHDAY {matchday} {tail}\033[0m".format(matchday=matchday, tail=tail))
+            print("\033[1m### MATCHDAY {matchday: >2} {tail}\033[0m".format(matchday=matchday, tail=tail))
             for match in matches:
                 odds_home_marker, odds_draw_marker, odds_guest_marker = self._define_markers(match)
                 print("{home_team: >15} - {guest_team: <15}\t"
