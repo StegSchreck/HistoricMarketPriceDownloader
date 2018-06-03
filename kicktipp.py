@@ -114,8 +114,8 @@ class Kicktipp:
         if self.args and not self.args.show_browser:
             self.display.stop()
 
-    def handle_matchday(self, betting_pool, matchday):
-        self.go_to_matchday(betting_pool, matchday)
+    def handle_matchday(self, community, matchday):
+        self.go_to_matchday(community, matchday)
         matches = self.retrieve_betting_odds()
         self.calculate_tips(matches)
         if self.args and (self.args.dryrun or (self.args.verbose and self.args.verbose >= 1)):
@@ -161,9 +161,9 @@ class Kicktipp:
             odds_guest_marker = '\033[91m'
         return odds_home_marker, odds_draw_marker, odds_guest_marker
 
-    def go_to_matchday(self, betting_pool, matchday):
-        self.browser.get("https://www.kicktipp.de/{betting_pool}/tippabgabe?&spieltagIndex={matchday}".format(
-            betting_pool=betting_pool,
+    def go_to_matchday(self, community, matchday):
+        self.browser.get("https://www.kicktipp.de/{community}/tippabgabe?&spieltagIndex={matchday}".format(
+            community=community,
             matchday=matchday
         ))
 
