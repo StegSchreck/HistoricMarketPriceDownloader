@@ -9,7 +9,7 @@ def main():
     kicktipp = Kicktipp(args)
     for matchday in args.matchday:
         kicktipp.handle_matchday(args.community, int(matchday))
-    kicktipp.kill_browser()
+    kicktipp.browser_handler.kill()
 
 
 def parse_args():

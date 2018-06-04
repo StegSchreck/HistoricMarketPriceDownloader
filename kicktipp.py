@@ -4,10 +4,9 @@ import time
 from collections import namedtuple
 
 from bs4 import BeautifulSoup
-from selenium.common.exceptions import NoSuchElementException, WebDriverException
-from selenium.webdriver import Firefox, DesiredCapabilities, FirefoxProfile
-from selenium.webdriver.firefox.options import Options
-from xvfbwrapper import Xvfb
+from selenium.common.exceptions import NoSuchElementException
+
+from browser_handler import BrowserHandler
 
 
 class Kicktipp:
@@ -22,41 +21,8 @@ class Kicktipp:
         self._init_browser()
 
     def _init_browser(self):
-        if self.args and not self.args.show_browser:
-            self.display = Xvfb()
-            self.display.start()
-
-        log_level = 'warn'
-
-        capabilities = DesiredCapabilities.FIREFOX.copy()
-        capabilities["moz:firefoxOptions"] = {
-            "log": {
-                "level": log_level,
-            },
-        }
-
-        options = Options()
-        options.log.level = log_level
-
-        profile = FirefoxProfile()
-        profile.set_preference("browser.download.folderList", 2)
-        profile.set_preference("browser.download.manager.showWhenStarting", False)
-        profile.set_preference("browser.helperApps.neverAsk.saveToDisk", "text/csv, application/zip")
-        profile.set_preference("browser.helperApps.alwaysAsk.force", False)
-        profile.set_preference("devtools.jsonview.enabled", False)
-        profile.set_preference("media.volume_scale", "0.0")
-        # https://github.com/mozilla/geckodriver/issues/858#issuecomment-322512336
-        profile.set_preference("dom.file.createInChild", True)
-
-        self.browser = Firefox(
-            firefox_profile=profile,
-            capabilities=capabilities,
-            firefox_options=options,
-            log_path="geckodriver.log"
-        )
-        # http://stackoverflow.com/questions/42754877/cant-upload-file-using-selenium-with-python-post-post-session-b90ee4c1-ef51-4  # pylint: disable=line-too-long
-        self.browser._is_remote = False  # pylint: disable=protected-access
-
+        self.browser_handler = BrowserHandler(self.args)
+        self.browser = self.browser_handler.browser
         self.login()
 
     def login(self):
@@ -100,19 +66,8 @@ class Kicktipp:
         if self._user_is_not_logged_in():
             sys.stderr.write("Login to Kicktipp failed.")
             sys.stdout.flush()
-            self.kill_browser()
+            self.browser_handler.kill()
             sys.exit(1)
-
-    def kill_browser(self):
-        self.browser.stop_client()
-        self.browser.close()
-        try:
-            self.browser.quit()
-        except WebDriverException:
-            pass
-
-        if self.args and not self.args.show_browser:
-            self.display.stop()
 
     def handle_matchday(self, community, matchday):
         self.go_to_matchday(community, matchday)
