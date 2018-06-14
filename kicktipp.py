@@ -6,6 +6,7 @@ from collections import namedtuple
 from bs4 import BeautifulSoup
 from selenium.common.exceptions import NoSuchElementException
 
+from bash_color import BashColor
 from browser_handler import BrowserHandler
 
 
@@ -75,14 +76,14 @@ class Kicktipp:
         self.calculate_tips(matches)
         if self.args and (self.args.dryrun or (self.args.verbose and self.args.verbose >= 1)):
             tail = '#' * 75
-            print("\033[1m### MATCHDAY {matchday: >2} {tail}\033[0m".format(matchday=matchday, tail=tail))
+            print(BashColor.BOLD + "### MATCHDAY {matchday: >2} {tail}".format(matchday=matchday, tail=tail) + BashColor.END)
             for match in matches:
                 odds_home_marker, odds_draw_marker, odds_guest_marker = self._define_markers(match)
                 print("{home_team: >15} - {guest_team: <15}\t"
-                      "{odds_home_marker}{odds_home: 7.2f}\033[0m "
-                      "{odds_draw_marker}{odds_draw: 7.2f}\033[0m "
-                      "{odds_guest_marker}{odds_guest: 7.2f}\033[0m\t\t"
-                      "\033[94m[{tip_home: >2} :{tip_guest: >2} ]\033[0m".format(
+                      "{odds_home_marker}{odds_home: 7.2f}{marker_end} "
+                      "{odds_draw_marker}{odds_draw: 7.2f}{marker_end} "
+                      "{odds_guest_marker}{odds_guest: 7.2f}{marker_end}\t\t"
+                      "{tip_marker}[{tip_home: >2} :{tip_guest: >2} ]{marker_end}".format(
                           home_team=match.home_team,
                           guest_team=match.guest_team,
                           odds_home_marker=odds_home_marker,
@@ -92,28 +93,30 @@ class Kicktipp:
                           odds_draw=match.odds_draw,
                           odds_guest=match.odds_guest,
                           tip_home=match.tip_home,
-                          tip_guest=match.tip_guest
+                          tip_guest=match.tip_guest,
+                          tip_marker=BashColor.BLUE,
+                          marker_end=BashColor.END
                       ))
         if self.args and not self.args.dryrun:
             self.enter_tips(matches)
 
     @staticmethod
     def _define_markers(match):
-        odds_home_marker = '\033[93m'
-        odds_draw_marker = '\033[93m'
-        odds_guest_marker = '\033[93m'
+        odds_home_marker = BashColor.YELLOW
+        odds_draw_marker = BashColor.YELLOW
+        odds_guest_marker = BashColor.YELLOW
         if match.odds_home == min(match.odds_home, match.odds_draw, match.odds_guest):
-            odds_home_marker = '\033[92m'
+            odds_home_marker = BashColor.GREEN
         elif match.odds_home == max(match.odds_home, match.odds_draw, match.odds_guest):
-            odds_home_marker = '\033[91m'
+            odds_home_marker = BashColor.RED
         if match.odds_draw == min(match.odds_home, match.odds_draw, match.odds_guest):
-            odds_draw_marker = '\033[92m'
+            odds_draw_marker = BashColor.GREEN
         elif match.odds_draw == max(match.odds_home, match.odds_draw, match.odds_guest):
-            odds_draw_marker = '\033[91m'
+            odds_draw_marker = BashColor.RED
         if match.odds_guest == min(match.odds_home, match.odds_draw, match.odds_guest):
-            odds_guest_marker = '\033[92m'
+            odds_guest_marker = BashColor.GREEN
         elif match.odds_guest == max(match.odds_home, match.odds_draw, match.odds_guest):
-            odds_guest_marker = '\033[91m'
+            odds_guest_marker = BashColor.RED
         return odds_home_marker, odds_draw_marker, odds_guest_marker
 
     def go_to_matchday(self, community, matchday):
@@ -149,9 +152,16 @@ class Kicktipp:
         for i in range(len(matches)):
             match = matches[i]
             match_row = self.browser.find_element_by_id('tippabgabeSpiele').find_elements_by_css_selector('.datarow')[1:][i]
-            match_row.find_elements_by_tag_name('input')[1].clear()
-            match_row.find_elements_by_tag_name('input')[1].send_keys(match.tip_home)
-            match_row.find_elements_by_tag_name('input')[2].clear()
-            match_row.find_elements_by_tag_name('input')[2].send_keys(match.tip_guest)
+            input_fields = match_row.find_elements_by_tag_name('input')
+            if len(input_fields) == 0:
+                print("{prefix} could not enter tip for game {index} - no input fields present.".format(
+                    prefix=BashColor.BOLD + BashColor.VIOLET + " └──> WARN: " + BashColor.END,
+                    index=BashColor.BOLD + str(i+1) + BashColor.END
+                ))
+                continue
+            input_fields[1].clear()
+            input_fields[1].send_keys(match.tip_home)
+            input_fields[2].clear()
+            input_fields[2].send_keys(match.tip_guest)
 
         self.browser.find_element_by_xpath("//form[@id='tippabgabeForm']//input[@type='submit']").click()
