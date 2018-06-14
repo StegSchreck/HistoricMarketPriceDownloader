@@ -23,6 +23,8 @@ def parse_args():
     argparser.add_argument("-m", "--matchday", help="Number of the matchday to bet for", required=True, action='append')
     argparser.add_argument("-d", "--dryrun", action="store_true", required=False,
                            help="Do not insert into Kicktipp, only print calculated results on console")
+    argparser.add_argument("-r", "--random", help="Generate random scores and ignore betting odds",
+                           action="store_true", required=False)
     args = argparser.parse_args()
     return args
 

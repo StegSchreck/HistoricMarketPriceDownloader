@@ -1,4 +1,5 @@
 import math
+import random
 import sys
 import time
 from collections import namedtuple
@@ -72,8 +73,13 @@ class Kicktipp:
 
     def handle_matchday(self, community, matchday):
         self.go_to_matchday(community, matchday)
-        matches = self.retrieve_betting_odds()
-        self.calculate_tips(matches)
+        matches = self.retrieve_matches_and_betting_odds()
+
+        if self.args and self.args.random:
+            self.random_tips(matches)
+        else:
+            self.calculate_tips(matches)
+
         if self.args and (self.args.dryrun or (self.args.verbose and self.args.verbose >= 1)):
             tail = '#' * 75
             print(BashColor.BOLD + "### MATCHDAY {matchday: >2} {tail}".format(matchday=matchday, tail=tail) + BashColor.END)
@@ -125,7 +131,7 @@ class Kicktipp:
             matchday=matchday
         ))
 
-    def retrieve_betting_odds(self):
+    def retrieve_matches_and_betting_odds(self):
         matchday_page = BeautifulSoup(self.browser.page_source, 'html.parser')
         match_rows = matchday_page.find('table', id='tippabgabeSpiele').find_all('tr', class_='datarow')
 
@@ -147,6 +153,12 @@ class Kicktipp:
         for match in matches:
             match.tip_home = max(round(math.log((match.odds_guest - 1), 1.75)), 0)
             match.tip_guest = max(round(math.log((match.odds_home - 1), 1.75)), 0)
+
+    @staticmethod
+    def random_tips(matches):
+        for match in matches:
+            match.tip_home = random.randint(0, 4)
+            match.tip_guest = random.randint(0, 4)
 
     def enter_tips(self, matches):
         for i in range(len(matches)):
