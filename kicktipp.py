@@ -75,10 +75,7 @@ class Kicktipp:
         self.go_to_matchday(community, matchday)
         matches = self.retrieve_matches_and_betting_odds()
 
-        if self.args and self.args.random:
-            self.random_tips(matches)
-        else:
-            self.calculate_tips(matches)
+        self.fill_tips(matches)
 
         if self.args and (self.args.dryrun or (self.args.verbose and self.args.verbose >= 1)):
             tail = '#' * 75
@@ -105,6 +102,17 @@ class Kicktipp:
                       ))
         if self.args and not self.args.dryrun:
             self.enter_tips(matches)
+
+    def fill_tips(self, matches):
+        if self.args and self.args.random:
+            self.create_random_tips(matches)
+        elif self.args and self.args.anti:
+            self.create_tips_by_favoring_the_underdog(matches)
+        else:
+            self.calculate_tips_by_betting_odds(matches)
+        # for match in matches:
+        #     match.tip_home = 1
+        #     match.tip_guest = 0
 
     @staticmethod
     def _define_markers(match):
@@ -149,13 +157,23 @@ class Kicktipp:
         return matches
 
     @staticmethod
-    def calculate_tips(matches):
+    def calculate_tips_by_betting_odds(matches):
         for match in matches:
             match.tip_home = max(round(math.log((match.odds_guest - 1), 1.75)), 0)
             match.tip_guest = max(round(math.log((match.odds_home - 1), 1.75)), 0)
 
     @staticmethod
-    def random_tips(matches):
+    def create_tips_by_favoring_the_underdog(matches):
+        for match in matches:
+            if match.odds_home < match.odds_guest:
+                match.tip_home = 0
+                match.tip_guest = 1
+            else:
+                match.tip_home = 1
+                match.tip_guest = 0
+
+    @staticmethod
+    def create_random_tips(matches):
         for match in matches:
             match.tip_home = random.randint(0, 4)
             match.tip_guest = random.randint(0, 4)

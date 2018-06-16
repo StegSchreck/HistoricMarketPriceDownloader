@@ -25,6 +25,8 @@ def parse_args():
                            help="Do not insert into Kicktipp, only print calculated results on console")
     argparser.add_argument("-r", "--random", help="Generate random scores and ignore betting odds",
                            action="store_true", required=False)
+    argparser.add_argument("-a", "--anti", help="Generate scores by favoring the underdog according to betting odds",
+                           action="store_true", required=False)
     args = argparser.parse_args()
     return args
 
