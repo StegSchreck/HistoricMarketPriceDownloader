@@ -27,6 +27,7 @@ def parse_args():
                            action="store_true", required=False)
     argparser.add_argument("-a", "--anti", help="Generate scores by favoring the underdog according to betting odds",
                            action="store_true", required=False)
+    argparser.add_argument("-s", "--static", help="Generate static scores", required=False)
     args = argparser.parse_args()
     return args
 

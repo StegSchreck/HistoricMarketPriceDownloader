@@ -108,11 +108,10 @@ class Kicktipp:
             self.create_random_tips(matches)
         elif self.args and self.args.anti:
             self.create_tips_by_favoring_the_underdog(matches)
+        elif self.args and self.args.static:
+            self.create_static_tips(matches)
         else:
             self.calculate_tips_by_betting_odds(matches)
-        # for match in matches:
-        #     match.tip_home = 1
-        #     match.tip_guest = 0
 
     @staticmethod
     def _define_markers(match):
@@ -177,6 +176,12 @@ class Kicktipp:
         for match in matches:
             match.tip_home = random.randint(0, 4)
             match.tip_guest = random.randint(0, 4)
+
+    def create_static_tips(self, matches):
+        home, guest = self.args.static.split(':')
+        for match in matches:
+            match.tip_home = home
+            match.tip_guest = guest
 
     def enter_tips(self, matches):
         for i in range(len(matches)):
