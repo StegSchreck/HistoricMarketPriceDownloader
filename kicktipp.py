@@ -179,7 +179,7 @@ class Kicktipp:
 
     def create_static_tips(self, matches):
         for match in matches:
-            match.tip_home, match.tip_geust = self.args.static.split(':')
+            match.tip_home, match.tip_guest = self.args.static.split(':')
 
     def enter_tips(self, matches):
         for i in range(len(matches)):
