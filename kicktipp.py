@@ -178,10 +178,8 @@ class Kicktipp:
             match.tip_guest = random.randint(0, 4)
 
     def create_static_tips(self, matches):
-        home, guest = self.args.static.split(':')
         for match in matches:
-            match.tip_home = home
-            match.tip_guest = guest
+            match.tip_home, match.tip_geust = self.args.static.split(':')
 
     def enter_tips(self, matches):
         for i in range(len(matches)):
