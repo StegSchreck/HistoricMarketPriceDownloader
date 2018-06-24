@@ -31,12 +31,12 @@ There are multiple modes this script can run with:
 ### Predictions based on betting odds
 By default, this script will use this mode, unless you set a different mode (see below).
 ```
-python main.py -u <your.name@domain.com> -p <your_secret_password> -c <name_of_the_prediction_game> -m 1
+python3 main.py -u <your.name@domain.com> -p <your_secret_password> -c <name_of_the_prediction_game> -m 1
 ```
 
 You can also enter the predictions for multiple matchdays at once by defining another `-m` parameter, e.g.:
 ```
-python main.py -u <your.name@domain.com> -p <your_secret_password> -c <name_of_the_prediction_game> -m 1 -m 2 -m 3
+python3 main.py -u <your.name@domain.com> -p <your_secret_password> -c <name_of_the_prediction_game> -m 1 -m 2 -m 3
 ```
 
 ### Predictions _against_ betting odds (favor the underdog)
@@ -44,21 +44,21 @@ By defining the `-a` or `--anti` parameter, the script will set the prediction t
 with a result of 1:0.
 The "underdog" is defined having the higher number when parsing the betting odds.
 ```
-python main.py -u <your.name@domain.com> -p <your_secret_password> -c <name_of_the_prediction_game> -m 1 -a
+python3 main.py -u <your.name@domain.com> -p <your_secret_password> -c <name_of_the_prediction_game> -m 1 -a
 ```
 
 ### Static prediction for every match
 By defining the `-s` or `--static` parameter, you can choose to set the same prediction result for every match.
 For example, this will set every prediction to 4:2: 
 ```
-python main.py -u <your.name@domain.com> -p <your_secret_password> -c <name_of_the_prediction_game> -m 1 -s 4:2
+python3 main.py -u <your.name@domain.com> -p <your_secret_password> -c <name_of_the_prediction_game> -m 1 -s 4:2
 ```
 
 ### Random predictions
 By defining the `-r` or `--random` parameter, you can choose to set a randomly generated prediction result for every match.
 This will randomly choose a number between 0 and 4 for the home team and guest team of the matches independently.
 ```
-python main.py -u <your.name@domain.com> -p <your_secret_password> -c <name_of_the_prediction_game> -m 1 -r
+python3 main.py -u <your.name@domain.com> -p <your_secret_password> -c <name_of_the_prediction_game> -m 1 -r
 ```
 
 
