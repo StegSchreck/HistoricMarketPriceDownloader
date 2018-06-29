@@ -83,16 +83,16 @@ class Kicktipp:
             for match in matches:
                 print()
                 if match.odds_home is not None and match.odds_draw is not None and match.odds_guest is not None:
-                    # noinspection PyTypeChecker
-                    self.print_with_betting_odds(match)
+                    self.print_match_with_betting_odds(match)
+                elif match.tip_home is not None and match.tip_guest is not None:
+                    self.print_match_without_betting_odds(match)
                 else:
-                    # noinspection PyTypeChecker
-                    self.print_without_betting_odds(match)
+                    self.print_match_where_no_tips_were_calculated(match)
 
         if self.args and not self.args.dryrun:
             self.enter_tips(matches)
 
-    def print_with_betting_odds(self, match):
+    def print_match_with_betting_odds(self, match):
         odds_home_marker, odds_draw_marker, odds_guest_marker = self._define_markers(match)
         print("{home_team: >15} - {guest_team: <15}\t"
               "{odds_home_marker}{odds_home: 7.2f}{marker_end} "
@@ -114,7 +114,7 @@ class Kicktipp:
               ))
 
     @staticmethod
-    def print_without_betting_odds(match):
+    def print_match_without_betting_odds(match):
         print("{home_team: >15} - {guest_team: <15}\t"
               "{tip_marker}[{tip_home: >2} :{tip_guest: >2} ]{marker_end}".format(
                  home_team=match.home_team,
@@ -122,6 +122,16 @@ class Kicktipp:
                  tip_home=match.tip_home,
                  tip_guest=match.tip_guest,
                  tip_marker=BashColor.BLUE,
+                 marker_end=BashColor.END
+              ))
+
+    @staticmethod
+    def print_match_where_no_tips_were_calculated(match):
+        print("{home_team: >15} - {guest_team: <15}\t"
+              "{message_marker}Could not calculate prediction. Maybe no betting odds were present?{marker_end}".format(
+                 home_team=match.home_team,
+                 guest_team=match.guest_team,
+                 message_marker=BashColor.VIOLET,
                  marker_end=BashColor.END
               ))
 
@@ -166,19 +176,23 @@ class Kicktipp:
 
         matches = []
 
-        for match_row in match_rows[1:]:
-            match = namedtuple('Match', ['home_team', 'guest_team', 'odds_home', 'odds_draw', 'odds_guest'])
+        for match_row in match_rows[1:]:  # ignore table header row
+            match = namedtuple('Match', ['home_team', 'guest_team', 'odds_home', 'odds_draw', 'odds_guest', 'tip_home', 'tip_guest'])
             match.home_team = match_row.find('td', class_='col1').get_text()
             match.guest_team = match_row.find('td', class_='col2').get_text()
             betting_odds_columns = match_row.find_all('td', class_='kicktipp-wettquote')
+            match.tip_home = None
+            match.tip_guest = None
+            match.odds_home = None
+            match.odds_draw = None
+            match.odds_guest = None
             if len(betting_odds_columns) > 0:
-                match.odds_home = float(betting_odds_columns[0].get_text().replace(',', '.'))
-                match.odds_draw = float(betting_odds_columns[1].get_text().replace(',', '.'))
-                match.odds_guest = float(betting_odds_columns[2].get_text().replace(',', '.'))
-            else:
-                match.odds_home = None
-                match.odds_draw = None
-                match.odds_guest = None
+                try:
+                    match.odds_home = float(betting_odds_columns[0].get_text().replace(',', '.'))
+                    match.odds_draw = float(betting_odds_columns[1].get_text().replace(',', '.'))
+                    match.odds_guest = float(betting_odds_columns[2].get_text().replace(',', '.'))
+                except ValueError:
+                    pass
             matches.append(match)
 
         return matches
@@ -186,18 +200,20 @@ class Kicktipp:
     @staticmethod
     def calculate_tips_by_betting_odds(matches):
         for match in matches:
-            match.tip_home = max(round(math.log((match.odds_guest - 1), 1.75)), 0)
-            match.tip_guest = max(round(math.log((match.odds_home - 1), 1.75)), 0)
+            if match.odds_home is not None and match.odds_guest is not None:
+                match.tip_home = max(round(math.log((match.odds_guest - 1), 1.75)), 0)
+                match.tip_guest = max(round(math.log((match.odds_home - 1), 1.75)), 0)
 
     @staticmethod
     def create_tips_by_favoring_the_underdog(matches):
         for match in matches:
-            if match.odds_home < match.odds_guest:
-                match.tip_home = 0
-                match.tip_guest = 1
-            else:
-                match.tip_home = 1
-                match.tip_guest = 0
+            if match.odds_home is not None and match.odds_guest is not None:
+                if match.odds_home < match.odds_guest:
+                    match.tip_home = 0
+                    match.tip_guest = 1
+                else:
+                    match.tip_home = 1
+                    match.tip_guest = 0
 
     @staticmethod
     def create_random_tips(matches):
@@ -212,17 +228,18 @@ class Kicktipp:
     def enter_tips(self, matches):
         for i in range(len(matches)):
             match = matches[i]
-            match_row = self.browser.find_element_by_id('tippabgabeSpiele').find_elements_by_css_selector('.datarow')[1:][i]
-            input_fields = match_row.find_elements_by_tag_name('input')
-            if len(input_fields) == 0:
-                print("{prefix} could not enter tip for game {index} - no input fields present.".format(
-                    prefix=BashColor.BOLD + BashColor.VIOLET + " └──> WARN: " + BashColor.END,
-                    index=BashColor.BOLD + str(i+1) + BashColor.END
-                ))
-                continue
-            input_fields[1].clear()
-            input_fields[1].send_keys(match.tip_home)
-            input_fields[2].clear()
-            input_fields[2].send_keys(match.tip_guest)
+            if match.tip_home is not None and match.tip_guest is not None:
+                match_row = self.browser.find_element_by_id('tippabgabeSpiele').find_elements_by_css_selector('.datarow')[1:][i]
+                input_fields = match_row.find_elements_by_tag_name('input')
+                if len(input_fields) == 0:
+                    print("{prefix} could not enter tip for game {index} - no input fields present.".format(
+                        prefix=BashColor.BOLD + BashColor.VIOLET + " └──> WARN: " + BashColor.END,
+                        index=BashColor.BOLD + str(i+1) + BashColor.END
+                    ))
+                    continue
+                input_fields[1].clear()
+                input_fields[1].send_keys(match.tip_home)
+                input_fields[2].clear()
+                input_fields[2].send_keys(match.tip_guest)
 
         self.browser.find_element_by_xpath("//form[@id='tippabgabeForm']//input[@type='submit']").click()
