@@ -81,27 +81,49 @@ class Kicktipp:
             tail = '#' * 75
             print(BashColor.BOLD + "### MATCHDAY {matchday: >2} {tail}".format(matchday=matchday, tail=tail) + BashColor.END)
             for match in matches:
-                odds_home_marker, odds_draw_marker, odds_guest_marker = self._define_markers(match)
-                print("{home_team: >15} - {guest_team: <15}\t"
-                      "{odds_home_marker}{odds_home: 7.2f}{marker_end} "
-                      "{odds_draw_marker}{odds_draw: 7.2f}{marker_end} "
-                      "{odds_guest_marker}{odds_guest: 7.2f}{marker_end}\t\t"
-                      "{tip_marker}[{tip_home: >2} :{tip_guest: >2} ]{marker_end}".format(
-                          home_team=match.home_team,
-                          guest_team=match.guest_team,
-                          odds_home_marker=odds_home_marker,
-                          odds_draw_marker=odds_draw_marker,
-                          odds_guest_marker=odds_guest_marker,
-                          odds_home=match.odds_home,
-                          odds_draw=match.odds_draw,
-                          odds_guest=match.odds_guest,
-                          tip_home=match.tip_home,
-                          tip_guest=match.tip_guest,
-                          tip_marker=BashColor.BLUE,
-                          marker_end=BashColor.END
-                      ))
+                print()
+                if match.odds_home is not None and match.odds_draw is not None and match.odds_guest is not None:
+                    # noinspection PyTypeChecker
+                    self.print_with_betting_odds(match)
+                else:
+                    # noinspection PyTypeChecker
+                    self.print_without_betting_odds(match)
+
         if self.args and not self.args.dryrun:
             self.enter_tips(matches)
+
+    def print_with_betting_odds(self, match):
+        odds_home_marker, odds_draw_marker, odds_guest_marker = self._define_markers(match)
+        print("{home_team: >15} - {guest_team: <15}\t"
+              "{odds_home_marker}{odds_home: 7.2f}{marker_end} "
+              "{odds_draw_marker}{odds_draw: 7.2f}{marker_end} "
+              "{odds_guest_marker}{odds_guest: 7.2f}{marker_end}\t\t"
+              "{tip_marker}[{tip_home: >2} :{tip_guest: >2} ]{marker_end}".format(
+                 home_team=match.home_team,
+                 guest_team=match.guest_team,
+                 odds_home_marker=odds_home_marker,
+                 odds_draw_marker=odds_draw_marker,
+                 odds_guest_marker=odds_guest_marker,
+                 odds_home=match.odds_home,
+                 odds_draw=match.odds_draw,
+                 odds_guest=match.odds_guest,
+                 tip_home=match.tip_home,
+                 tip_guest=match.tip_guest,
+                 tip_marker=BashColor.BLUE,
+                 marker_end=BashColor.END
+              ))
+
+    @staticmethod
+    def print_without_betting_odds(match):
+        print("{home_team: >15} - {guest_team: <15}\t"
+              "{tip_marker}[{tip_home: >2} :{tip_guest: >2} ]{marker_end}".format(
+                 home_team=match.home_team,
+                 guest_team=match.guest_team,
+                 tip_home=match.tip_home,
+                 tip_guest=match.tip_guest,
+                 tip_marker=BashColor.BLUE,
+                 marker_end=BashColor.END
+              ))
 
     def fill_tips(self, matches):
         if self.args and self.args.random:
@@ -153,6 +175,10 @@ class Kicktipp:
                 match.odds_home = float(betting_odds_columns[0].get_text().replace(',', '.'))
                 match.odds_draw = float(betting_odds_columns[1].get_text().replace(',', '.'))
                 match.odds_guest = float(betting_odds_columns[2].get_text().replace(',', '.'))
+            else:
+                match.odds_home = None
+                match.odds_draw = None
+                match.odds_guest = None
             matches.append(match)
 
         return matches
