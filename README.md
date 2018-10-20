@@ -49,9 +49,9 @@ python3 main.py -u <your.name@domain.com> -p <your_secret_password> -c <name_of_
 
 ### Static prediction for every match
 By defining the `-s` or `--static` parameter, you can choose to set the same prediction result for every match.
-For example, this will set every prediction to 4:2: 
+For example, this will set every prediction to 5:2: 
 ```
-python3 main.py -u <your.name@domain.com> -p <your_secret_password> -c <name_of_the_prediction_game> -m 1 -s 4:2
+python3 main.py -u <your.name@domain.com> -p <your_secret_password> -c <name_of_the_prediction_game> -m 1 -s 5:2
 ```
 
 ### Random predictions
