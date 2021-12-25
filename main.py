@@ -1,33 +1,35 @@
 #!/usr/bin/env python
 import argparse
+import os
+import time
+from datetime import datetime
 
-from kicktipp import Kicktipp
+import file_impex
+from ariva import Ariva
+
+EXPORTS_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), 'exports'))
+TIMESTAMP = datetime.fromtimestamp(time.time()).strftime('%Y%m%d%H%M%S')
 
 
 def main():
     args = parse_args()
-    kicktipp = Kicktipp(args)
-    for matchday in args.matchday:
-        kicktipp.handle_matchday(args.community, int(matchday))
-    kicktipp.browser_handler.kill()
+    ariva = Ariva(args)
+    market_prices = ariva.download(args.isin, args.market_place)
+    filename = args.filename if args and args.filename else f"{TIMESTAMP}_{args.isin}.csv"
+    file_impex.save_market_prices_to_csv(market_prices=market_prices, folder=args.destination, filename=filename)
+    ariva.browser_handler.kill()
 
 
 def parse_args():
     argparser = argparse.ArgumentParser()
-    argparser.add_argument("-v", "--verbose", action="count", help="increase output verbosity", required=False)
+    argparser.add_argument("-v", "--verbose", help="increase output verbosity", required=False, action="count")
     argparser.add_argument("-x", "--show_browser", help="show the browser doing his work",
                            action="store_true", required=False)
-    argparser.add_argument("-c", "--community", help="Kicktipp prediction community", required=True)
-    argparser.add_argument("-u", "--username", help="Username for Kicktipp login", required=True)
-    argparser.add_argument("-p", "--password", help="Password for Kicktipp login", required=True)
-    argparser.add_argument("-m", "--matchday", help="Number of the matchday to bet for", required=True, action='append')
-    argparser.add_argument("-d", "--dryrun", action="store_true", required=False,
-                           help="Do not insert into Kicktipp, only print calculated results on console")
-    argparser.add_argument("-r", "--random", help="Generate random scores and ignore betting odds",
-                           action="store_true", required=False)
-    argparser.add_argument("-a", "--anti", help="Generate scores by favoring the underdog according to betting odds",
-                           action="store_true", required=False)
-    argparser.add_argument("-s", "--static", help="Generate static scores", required=False)
+    argparser.add_argument("-i", "--isin", help="ISIN of the stock", required=True)
+    argparser.add_argument("-m", "--market_place", help="Name of the marketplace to use", required=False)
+    argparser.add_argument("-d", "--destination", help="destination folder for result CSV file", required=False,
+                           default=EXPORTS_FOLDER)
+    argparser.add_argument("-f", "--filename", help="filename for the result CSV", required=False)
     args = argparser.parse_args()
     return args
 

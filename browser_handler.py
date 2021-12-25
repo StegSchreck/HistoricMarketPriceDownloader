@@ -26,7 +26,7 @@ class BrowserHandler:
         self.browser = Firefox(
             firefox_profile=profile,
             capabilities=capabilities,
-            firefox_options=options,
+            options=options,
             log_path="{timestamp}_geckodriver.log".format(timestamp=TIMESTAMP)
         )
         # http://stackoverflow.com/questions/42754877/cant-upload-file-using-selenium-with-python-post-post-session-b90ee4c1-ef51-4  # pylint: disable=line-too-long

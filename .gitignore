@@ -1,4 +1,5 @@
 .idea
 venv
+exports
 __pycache__
 *geckodriver.log
