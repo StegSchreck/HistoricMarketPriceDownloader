@@ -4,7 +4,7 @@
   <img src="https://raw.githubusercontent.com/StegSchreck/HistoricMarketPriceDownloader/master/HistoricMarketPriceDownloader.png" width="400px">
 </p>
 
-This project serves as an automated way to download all available historic market prices of a stock from [ariva.de](https://www.ariva.de/) and saves them as a JSON file. This JSON file can then be used for uploading it to [PortfolioPerformance](https://www.portfolio-performance.info/en/).
+This project serves as an automated way to download all available historic market prices of a stock from [ariva.de](https://www.ariva.de/) and saves them as a CSV file in a format intended for uploading it to [PortfolioPerformance](https://www.portfolio-performance.info/en/).
 
 
 ## Preconditions
