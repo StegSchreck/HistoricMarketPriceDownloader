@@ -26,6 +26,8 @@ def parse_args():
     argparser.add_argument("-x", "--show_browser", help="show the browser doing his work",
                            action="store_true", required=False)
     argparser.add_argument("-i", "--isin", help="ISIN of the stock", required=True)
+    argparser.add_argument("-u", "--username", help="Username or email for ariva login", required=True)
+    argparser.add_argument("-p", "--password", help="Password for ariva login", required=True)
     argparser.add_argument("-m", "--market_place", help="Name of the marketplace to use", required=False)
     argparser.add_argument("-d", "--destination", help="destination folder for result CSV file", required=False,
                            default=EXPORTS_FOLDER)

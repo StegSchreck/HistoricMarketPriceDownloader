@@ -1,3 +1,4 @@
+import sys
 import time
 import urllib.parse
 from datetime import datetime
@@ -5,6 +6,7 @@ from typing import Optional, List, Dict
 
 from bs4 import BeautifulSoup
 from progressbar import ProgressBar
+from selenium.common.exceptions import NoSuchElementException
 
 from bash_color import BashColor
 from browser_handler import BrowserHandler
@@ -13,6 +15,12 @@ from browser_handler import BrowserHandler
 class Ariva:
     def __init__(self, args):
         self.args = args
+
+        login_form_selector = "//form[@id='user_login']"
+        self.LOGIN_USERNAME_SELECTOR = login_form_selector + "//input[@id='ISID']"
+        self.LOGIN_PASSWORD_SELECTOR = login_form_selector + "//input[@id='ISKW']"
+        self.LOGIN_BUTTON_SELECTOR = login_form_selector + "//input[@type='submit']"
+
         self._init_browser()
         self.base_url = f"https://www.ariva.de/"
         self.isin = None
@@ -23,6 +31,51 @@ class Ariva:
     def _init_browser(self):
         self.browser_handler = BrowserHandler(self.args)
         self.browser = self.browser_handler.browser
+        self.login()
+
+    def login(self):
+        self.browser.get("https://www.ariva.de/user/login")
+        time.sleep(1)
+
+        iteration = 0
+        while self._user_is_not_logged_in():
+            iteration += 1
+            try:
+                self._insert_login_credentials()
+                self._click_login_button()
+            except NoSuchElementException as e:
+                if iteration > 10:
+                    raise e
+                time.sleep(iteration * 1)
+                continue
+            if iteration > 2:
+                self._handle_login_unsuccessful()
+
+    def _user_is_not_logged_in(self):
+        return len(self.browser.find_elements_by_xpath(self.LOGIN_BUTTON_SELECTOR)) > 0 \
+               and len(self.browser.find_elements_by_xpath(self.LOGIN_USERNAME_SELECTOR)) > 0 \
+               and len(self.browser.find_elements_by_xpath(self.LOGIN_PASSWORD_SELECTOR)) > 0
+
+    def _insert_login_credentials(self):
+        login_field_user = self.browser.find_element_by_xpath(self.LOGIN_USERNAME_SELECTOR)
+        login_field_user.clear()
+        login_field_user.send_keys(self.args.username)
+        login_field_password = self.browser.find_element_by_xpath(self.LOGIN_PASSWORD_SELECTOR)
+        login_field_password.clear()
+        login_field_password.send_keys(self.args.password)
+
+    def _click_login_button(self):
+        login_button = self.browser.find_element_by_xpath(self.LOGIN_BUTTON_SELECTOR)
+        login_button.click()
+        time.sleep(2)  # wait for page to load
+
+    def _handle_login_unsuccessful(self):
+        time.sleep(1)
+        if self._user_is_not_logged_in():
+            sys.stderr.write("Login to Kicktipp failed.")
+            sys.stdout.flush()
+            self.browser_handler.kill()
+            sys.exit(1)
 
     def _handle_cookie_notice_if_present(self):
         cookie_notice_agree_buttons = self.browser.find_elements_by_xpath(
@@ -110,8 +163,8 @@ class Ariva:
         if self.args and self.args.verbose and self.args.verbose >= 2:
             print(f"parsing {len(price_table_rows)} table rows")
         for price_table_row in price_table_rows:
-            market_price_date = datetime.strptime(price_table_row.find_all('td')[0].get_text(), '%d.%m.%y').strftime('%Y-%m-%d')
-            market_price_value = price_table_row.find_all('td')[3].get_text().replace('.', '')  # entries are using comma as decimal separator
+            market_price_date = datetime.strptime(price_table_row.find_all('td')[0].get_text(), '%d.%m.%y').strftime('%Y-%m-%d').strip()
+            market_price_value = price_table_row.find_all('td')[3].get_text().replace('.', '').strip()  # entries are using comma as decimal separator
             self.market_prices[market_price_date] = market_price_value
             if self.args and self.args.verbose and self.args.verbose >= 2:
                 print(f"{self.isin}: [{market_price_date}] {market_price_value}")

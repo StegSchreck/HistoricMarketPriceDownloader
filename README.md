@@ -8,6 +8,7 @@ This project serves as an automated way to download all available historic marke
 
 
 ## Preconditions
+1. Create an account on [ariva.de](https://www.ariva.de/) and use these credentials when executing the script.
 1. Make sure you have Python3, Firefox and Xvfb installed on your system. This project is designed to run on Linux.
 1. Checkout the project
     `git clone https://github.com/StegSchreck/HistoricMarketPriceDownloader.git && cd HistoricMarketPriceDownloader`
@@ -25,13 +26,17 @@ This project serves as an automated way to download all available historic marke
 ## Running the script
 After ensuring that you met the preconditions, you can simply run the following command in your terminal using the ISIN of the stock you want to parse:
 ```
-python3 main.py --isin <isin>
+python3 main.py --isin <isin> --username <username_or_email> --password <password>
 ```
 
 
 ## Call arguments / parameters
 ### Mandatory
 `-i` / `--isin`: ISIN of the stock
+
+`-u` / `--username`: username or email for ariva login
+
+`-p` / `--password`: password for ariva login
 
 ### Optional
 `-m` / `--market_place`: Name of the marketplace to use. If given marketplace is not available, the default selection on the site is used.
