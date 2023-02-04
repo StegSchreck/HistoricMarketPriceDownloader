@@ -32,14 +32,14 @@ python3 main.py --isin <isin> --username <username_or_email> --password <passwor
 
 ## Call arguments / parameters
 ### Mandatory
-`-i` / `--isin`: ISIN of the stock
+`-i` / `--isin`: ISIN of the stock. You can define multiple ISINs to be considered by setting multiple `-i` parameters. If you additionally define a marketplace using `-m`, it will be attempted to use for all ISINs.
 
 `-u` / `--username`: username or email for ariva login
 
 `-p` / `--password`: password for ariva login
 
 ### Optional
-`-m` / `--market_place`: Name of the marketplace to use. If given marketplace is not available, the default selection on the site is used.
+`-m` / `--market_place`: Name of the marketplace to use. If given marketplace is not available, the default selection on the site is used. If you define a multiple ISINs using `-s`, the marketplace defined here will be attempted to be used for all ISINs.
 
 `-d` / `--destination`: destination folder for the resulting CSV file containing the parsed data - independent from `-f`/`--filename`
 

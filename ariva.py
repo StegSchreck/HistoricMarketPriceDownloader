@@ -104,8 +104,13 @@ class Ariva:
 
     def download(self, isin: str, market_place: Optional[str]) -> Dict[str, str]:
         self.isin = isin
-        self.base_url = f"https://www.ariva.de/{self.isin}/historische_kurse"
+        self.base_url = f"https://www.ariva.de/{self.isin}/kurse/historische-kurse"
         self.go_to_stock_page()
+
+        stock_page = BeautifulSoup(self.browser.page_source, "html.parser")
+        stock_name = stock_page.find("h1").get_text().replace("Historische Kurse", '').strip()
+        print(f"{BashColor.BOLD + BashColor.BLUE}INFO:{BashColor.END} Parsing [{self.isin}] {stock_name}")
+
         self.select_market_place(market_place)
         self.parse_stock_market_prices()
         return self.market_prices
@@ -151,6 +156,7 @@ class Ariva:
         historic_period_select = stock_page.find("select", attrs={"name": "month"})
         historic_period_options = historic_period_select.find_all('option')
         historic_period_values = [option['value'] for option in historic_period_options if option['value']]
+
         for i in range(len(historic_period_values)):
             historic_period_to_parse = historic_period_values[i]
             self.print_progress(i+1, historic_period_to_parse, historic_period_values)
@@ -160,6 +166,7 @@ class Ariva:
     def parse_stock_market_prices_for_period(self):
         stock_page = BeautifulSoup(self.browser.page_source, "html.parser")
         price_table_rows = stock_page.find(id='pageHistoricQuotes').find("table", class_="line").find_all('tr', class_="arrow0")
+
         if self.args and self.args.verbose and self.args.verbose >= 2:
             print(f"parsing {len(price_table_rows)} table rows")
         for price_table_row in price_table_rows:
