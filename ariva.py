@@ -170,8 +170,8 @@ class Ariva:
         if self.args and self.args.verbose and self.args.verbose >= 2:
             print(f"parsing {len(price_table_rows)} table rows")
         for price_table_row in price_table_rows:
-            market_price_date = datetime.strptime(price_table_row.find_all('td')[0].get_text(), '%d.%m.%y').strftime('%Y-%m-%d').strip()
-            market_price_value = price_table_row.find_all('td')[3].get_text().replace('.', '').strip()  # entries are using comma as decimal separator
+            market_price_date = datetime.strptime(price_table_row.find_all('td')[0].get_text().strip(), '%d.%m.%y').strftime('%Y-%m-%d')
+            market_price_value = price_table_row.find_all('td')[4].get_text().replace('.', '').strip()  # entries are using comma as decimal separator
             self.market_prices[market_price_date] = market_price_value
             if self.args and self.args.verbose and self.args.verbose >= 2:
                 print(f"{self.isin}: [{market_price_date}] {market_price_value}")
